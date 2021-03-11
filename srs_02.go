@@ -7,34 +7,44 @@ import (
 	"fmt"
 )
 
-var Fibonacchi map[int]int
-
-func scanNum(msg string) (int, error) {
-	var a int
+func scanNum(msg string) (uint8, error) {
+	var a uint8
 	for {
 		fmt.Print(msg)
 		n, err := fmt.Scan(&a)
-		if err != nil || n != 1 || a < 1 {
-			fmt.Println("Требуется натуральное число 1,2,.. !")
+		// у нас проблемы с малым диапазоном.. (см коммент ниже)
+		if err != nil || n != 1 || a < 1 || a > 254 {
+			fmt.Println("Требуется натуральное число 1,2,.. 254!")
 			continue
 		}
 		return a, err
 	}
 }
 
-func fibonacchi(n int) int {
-	if n == 0 || n == 1 {
-		return n
+// без расширения math мы ограничены uint64 : 0 to 18446744073709551615
+// это соответствует чуть больше чем fibonacchi(255), значит ограничим параметр uint8  : 0 to 255
+// const MaxUint = ^uint(0)
+
+// отрицательных чисел не будет, используем беззнаковый тип
+// когда уже написал эту ф-цию, нашел https://golang.org/pkg/math/big/#example__fibonacci
+// т.к. последовательностей фибоначчи тьма и тележка.. будем считать что это (1,2)-последовательность Фибоначчи
+// или последовательность A001045 в OEIS
+// 0, 1, 1, 3, 5, 11, 21, 43, 85, 171, 341, 683, 1365, 2731, 5461, 10923, 21845,..
+func fibonacchi(n uint8) uint64 {
+	// инициализируем map, задаем первые 2 элемента последовательности
+	var result map[uint8]uint64 = make(map[uint8]uint64, n+1)
+	result[0] = 0
+	result[1] = 1
+	// остальное расчитываем в цикле
+	for i := uint8(2); i <= n; i += 1 {
+		result[i] = result[i-1] + result[i-2]
 	}
-	result := fibonacchi(n-2) + fibonacchi(n-1)
-	Fibonacchi[n] = result
-	return result
+	// читаем из мапы (полезно только когда n=0, иначе нужен только последний элемент мапы, но она у нас не сортирована..)
+	return result[n]
 }
 
 func main() {
 	num, _ := scanNum("Введите натуральное число: ")
 
-	Fibonacchi = make(map[int]int)
 	fmt.Printf("fibonacchi(%d) = %d\n", num, fibonacchi(num))
-	fmt.Printf("eval fibonacchi(%d) = %v\n", num, Fibonacchi)
 }
