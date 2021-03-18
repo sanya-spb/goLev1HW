@@ -1,2 +1,4 @@
 .vscode/*
 goLev1HW
+go.*
+app_main
