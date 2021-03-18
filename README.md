@@ -1,80 +1,68 @@
-> Разработайте пакет для чтения конфигурации типичного веб-приложения через флаги или переменные окружения.
-> Пример конфигурации можно посмотреть [здесь](https://gist.github.com/rumyantseva/26bee59a04d416c55e0e7e8155717d59). По желанию вы можете задать другие имена полям, сгруппировать их или добавить собственные поля.
-> Помимо чтения конфигурации приложение также должно валидировать её - например, все URL’ы должны соответствовать ожидаемым форматам.
-> Работу с конфигурацией необходимо вынести в отдельный пакет (не в пакет main).
+## Урок 9. Работа с файловой системой
 
-#### REQUIREMENT
-go get github.com/komkom/toml
+1. К приложению из практической части предыдущего урока добавьте возможность читать данные из файлов. Конфигурация может быть задана в форматах yaml или json. Также по желанию вы можете добавить и другие форматы.
+2. Помимо чтения конфигурации приложение также должно валидировать её - например, все URL’ы должны соответствовать ожидаемым форматам.
+3. Работу с конфигурацией необходимо вынести в отдельный пакет (не в пакет main).
 
-
-#### RESULT
+### RESULT
 Вывод программы:
-```json
-$ SERVER_PORT=8181 MY_URL= go run main.go --debug
+```bash
+$ git tag
+v1.0.0
+$ make
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build \
+        -ldflags "-s -w -X github.com/sanya-spb/goLev1HW/utils/version.version=v1.0.0 \
+        -X github.com/sanya-spb/goLev1HW/utils/version.commit=git-3c9bb0b \
+        -X github.com/sanya-spb/goLev1HW/utils/version.buildTime=2021-03-18_14:12:01 \
+        -X github.com/sanya-spb/goLev1HW/utils/version.copyright="sanya-spb"" \
+        -o app_main 
+$ ./app_main --config=config.yaml --debug
 {
-        "Debug": true,
-        "My_url": "",
-        "Database": {
-                "Host": "127.0.0.1",
-                "Port": 54321,
-                "User": "test",
-                "Pass": "pwd123",
-                "Ssl": true
+        "debug": true,
+        "my_url": "https://google.com",
+        "database": {
+                "host": "127.0.0.1",
+                "port": 54321,
+                "user": "test",
+                "pass": "pwd123",
+                "ssl": true
         },
-        "Server": {
-                "Bind": [
+        "server": {
+                "bind": [
                         "10.0.0.1",
                         "127.0.0.1"
                 ],
-                "Port": 8181,
-                "Log_level": 3
+                "port": 8888,
+                "log_level": 3
         }
 }
-Ok
+version: {Version:v1.0.0 Commit:git-3c9bb0b BuildTime:2021-03-18_14:12:01 Copyright:sanya-spb}
 ```
 
-В результате были применены default параметры, на них наложены параметры из конфиг-файла, далее поверх легли из ENV, и самые приоритетные из params, затем исправлен Log_level. 
-Т.к. установлен Debug, то в stdout выведен "причесанный" JSON конфига.
-
-валидацию URL сделал минимальную, т.к. думаю что основная проверка должна быть при подключении по этому URLу
-
-#### BUGS
-
-1. flag provided but not defined
-
-Хотел сделать красиво: 
-```go
-result.Debug = *flag.Bool("debug", getEnvBool("DEBUG", result.Debug), "Output verbose debug information")
-```
-но параметр --debug в упор не ставится, пришлось разбить на 2 части:
-```go
-	result.Debug = getEnvBool("DEBUG", result.Debug)
-	flag.BoolVar(&result.Debug, "debug", result.Debug, "Output verbose debug information")
-```
-
-#### TODO
+### TODO
 
 1. как сделать взаимозаменяемую структуру в Go
 
-```conf
-<...>
+```yaml
+#<...>
 # Database connection config
-[database]
-    # host = "127.0.0.1"# DB host (default: 127.0.0.1)
-    port = 54321        # DB port (default: 5432)
-    user = "test"       # DB user (required)
-    pass = "pwd123"     # DB Port (required)
-    ssl = true          # use ssl (optional)
-<...>
+database:
+    host: "127.0.0.1"
+    port: 54321
+    user: "test"
+    pass: "pwd123"
+    ssl: true
+#<...>
 ```
 либо
-```conf
-<...>
+```yaml
+#<...>
 # Database connection config
-[database]
-    url = jdbc:postgresql://localhost/test?user=fred&password=secret&ssl=true
-<...>
+database:
+    url: jdbc:postgresql://localhost/test?user=fred&password=secret&ssl=true
+#<...>
 ```
 
 понятно, что можно в структуру добавить еще один string и далее что-нить придумать..
+
 а как сделать, чтоб в зависимости от конфига - была либо та либо другая структура (знаний пока не хватает..)

@@ -3,18 +3,30 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 
-	"./utils"
+	"github.com/sanya-spb/goLev1HW/utils"
+	"github.com/sanya-spb/goLev1HW/utils/version"
 )
 
-var conf *utils.Config = new(utils.Config)
+type APP struct {
+	Conf    utils.Config
+	Version version.AppVersion
+}
+
+// var conf *utils.Config = new(utils.Config)
+var MyApp *APP = new(APP)
 
 func main() {
-	conf = utils.LoadConfig("./config.toml1")
-	if conf.Debug {
-		if b, err := json.Marshal(conf); err == nil {
+	MyApp.Version = *version.Version
+	confPathPtr := flag.String("config", utils.GetEnv("APP_CONFIG", "no-config"), "Path to configuration file (*.toml|*.yaml)")
+	confDebugPtr := flag.Bool("debug", utils.GetEnvBool("APP_DEBUG", false), "Output verbose debug information")
+	flag.Parse()
+	MyApp.Conf = *utils.LoadConfig(*confPathPtr, *confDebugPtr)
+	if MyApp.Conf.Debug {
+		if b, err := json.Marshal(MyApp.Conf); err == nil {
 			var out bytes.Buffer
 			if err := json.Indent(&out, b, "", "\t"); err == nil {
 				fmt.Println(out.String())
@@ -27,5 +39,5 @@ func main() {
 			log.Fatal("Что-то пошло не так..")
 		}
 	}
-	fmt.Println("Ok")
+	fmt.Printf("version: %+v\n", MyApp.Version)
 }

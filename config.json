@@ -1,0 +1,17 @@
+{
+    "_comment": "в JSON не предусмотрены комментарии",
+    "MyUrl": "https://google.com",
+    "Database": {
+            "Port": 54321,
+            "User": "test",
+            "Pass": "pwd123",
+            "Ssl": true
+    },
+    "Server": {
+            "Bind": [
+                    "10.0.0.1",
+                    "127.0.0.1"
+            ],
+            "LogLevel": 999
+    }
+}
