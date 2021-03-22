@@ -7,24 +7,24 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/sanya-spb/goLev1HW/utils"
+	"github.com/sanya-spb/goLev1HW/utils/config"
 	"github.com/sanya-spb/goLev1HW/utils/version"
 )
 
 type APP struct {
-	Conf    utils.Config
+	Conf    config.Config
 	Version version.AppVersion
 }
 
-// var conf *utils.Config = new(utils.Config)
+// var conf *config.Config = new(config.Config)
 var MyApp *APP = new(APP)
 
 func main() {
 	MyApp.Version = *version.Version
-	confPathPtr := flag.String("config", utils.GetEnv("APP_CONFIG", "no-config"), "Path to configuration file (*.toml|*.yaml)")
-	confDebugPtr := flag.Bool("debug", utils.GetEnvBool("APP_DEBUG", false), "Output verbose debug information")
+	confPathPtr := flag.String("config", config.GetEnv("APP_CONFIG", "no-config"), "Path to configuration file (*.toml|*.yaml)")
+	confDebugPtr := flag.Bool("debug", config.GetEnvBool("APP_DEBUG", false), "Output verbose debug information")
 	flag.Parse()
-	MyApp.Conf = *utils.LoadConfig(*confPathPtr, *confDebugPtr)
+	MyApp.Conf = *config.LoadConfig(*confPathPtr, *confDebugPtr)
 	if MyApp.Conf.Debug {
 		if b, err := json.Marshal(MyApp.Conf); err == nil {
 			var out bytes.Buffer
