@@ -25,7 +25,12 @@ clean:
 
 ## test: Run autotest
 test:
-	go test ${PROJECT}/utils/config/
+	go test -v ${PROJECT}/utils/config/
+	go test -v ${PROJECT}/fibonacci/
+
+## bench: Run benchmarks
+bench:
+	go test -v ${PROJECT}/fibonacci/ -bench=.
 
 ## help: Show this
 help: Makefile
