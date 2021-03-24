@@ -42,6 +42,26 @@ go test -v github.com/sanya-spb/goLev1HW/fibonacci/
 --- PASS: ExampleFibonacciM (0.00s)
 PASS
 ok      github.com/sanya-spb/goLev1HW/fibonacci (cached)
+$ make bench
+go test -v github.com/sanya-spb/goLev1HW/fibonacci/ -bench=.
+=== RUN   TestFibonacciR
+--- PASS: TestFibonacciR (2.16s)
+=== RUN   TestFibonacciM
+--- PASS: TestFibonacciM (0.00s)
+=== RUN   ExampleFibonacciR
+--- PASS: ExampleFibonacciR (0.00s)
+=== RUN   ExampleFibonacciM
+--- PASS: ExampleFibonacciM (0.00s)
+goos: linux
+goarch: amd64
+pkg: github.com/sanya-spb/goLev1HW/fibonacci
+cpu: Intel(R) Core(TM) i5-3570K CPU @ 3.40GHz
+BenchmarkFibonacciR
+BenchmarkFibonacciR-4                177           6699196 ns/op
+BenchmarkFibonacciM
+BenchmarkFibonacciM-4             302389              3449 ns/op
+PASS
+ok      github.com/sanya-spb/goLev1HW/fibonacci 5.114s
 ```
 
 ### 2.
