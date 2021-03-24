@@ -1,68 +1,70 @@
-## Урок 9. Работа с файловой системой
+## Урок 10. Основы тестирования Go-приложений
 
-1. К приложению из практической части предыдущего урока добавьте возможность читать данные из файлов. Конфигурация может быть задана в форматах yaml или json. Также по желанию вы можете добавить и другие форматы.
-2. Помимо чтения конфигурации приложение также должно валидировать её - например, все URL’ы должны соответствовать ожидаемым форматам.
-3. Работу с конфигурацией необходимо вынести в отдельный пакет (не в пакет main).
+1. Выберите три любых приложения, написанных в рамках курса, и добавьте к ним тесты. Обратите внимание: тестируемый код должен быть вынесен из пакета main в отдельный пакет или пакеты. Среды выбранных приложений обязательно должно быть хотя бы одно, в котором реализовано два разных варианта одного и того же алгоритма (например, в задаче на сортировку слайсов). Для таких приложений добавьте бенчмарки. Также хотя бы для одного приложения тестирование должно производиться на основе табличных тестов. Добавьте хотя бы один пример использования тестируемых функций с помощью механизма example.
+2. Познакомьтесь подробнее с библиотекой testify и попробуйте написание тестов с её помощью. Сравните этот способ написания тестов с вариантом, когда вы пишите тесты на чистом Go без testify. Какой подход вам нравится больше и почему?
 
-### RESULT
+### 1.
 Вывод программы:
 ```bash
-$ git tag
-v1.0.0
 $ make
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build \
         -ldflags "-s -w -X github.com/sanya-spb/goLev1HW/utils/version.version=v1.0.0 \
-        -X github.com/sanya-spb/goLev1HW/utils/version.commit=git-3c9bb0b \
-        -X github.com/sanya-spb/goLev1HW/utils/version.buildTime=2021-03-18_14:12:01 \
+        -X github.com/sanya-spb/goLev1HW/utils/version.commit=git-38904cb \
+        -X github.com/sanya-spb/goLev1HW/utils/version.buildTime=2021-03-24_10:27:41 \
         -X github.com/sanya-spb/goLev1HW/utils/version.copyright="sanya-spb"" \
-        -o app_main 
-$ ./app_main --config=config.yaml --debug
-{
-        "debug": true,
-        "my_url": "https://google.com",
-        "database": {
-                "host": "127.0.0.1",
-                "port": 54321,
-                "user": "test",
-                "pass": "pwd123",
-                "ssl": true
-        },
-        "server": {
-                "bind": [
-                        "10.0.0.1",
-                        "127.0.0.1"
-                ],
-                "port": 8888,
-                "log_level": 3
-        }
-}
-version: {Version:v1.0.0 Commit:git-3c9bb0b BuildTime:2021-03-18_14:12:01 Copyright:sanya-spb}
+        -o app_main main.go
+$ make test
+go test -v github.com/sanya-spb/goLev1HW/utils/config/
+=== RUN   TestIsIPv4Net
+--- PASS: TestIsIPv4Net (0.00s)
+=== RUN   TestIsURL
+--- PASS: TestIsURL (0.00s)
+=== RUN   TestTestConfig
+--- PASS: TestTestConfig (0.00s)
+=== RUN   ExampleIsIPv4Net_true
+--- PASS: ExampleIsIPv4Net_true (0.00s)
+=== RUN   ExampleIsIPv4Net_false
+--- PASS: ExampleIsIPv4Net_false (0.00s)
+=== RUN   ExampleIsURL_true
+--- PASS: ExampleIsURL_true (0.00s)
+=== RUN   ExampleIsURL_false
+--- PASS: ExampleIsURL_false (0.00s)
+PASS
+ok      github.com/sanya-spb/goLev1HW/utils/config      (cached)
+go test -v github.com/sanya-spb/goLev1HW/fibonacci/
+=== RUN   TestFibonacciR
+--- PASS: TestFibonacciR (2.15s)
+=== RUN   TestFibonacciM
+--- PASS: TestFibonacciM (0.00s)
+=== RUN   ExampleFibonacciR
+--- PASS: ExampleFibonacciR (0.00s)
+=== RUN   ExampleFibonacciM
+--- PASS: ExampleFibonacciM (0.00s)
+PASS
+ok      github.com/sanya-spb/goLev1HW/fibonacci (cached)
+$ make bench
+go test -v github.com/sanya-spb/goLev1HW/fibonacci/ -bench=.
+=== RUN   TestFibonacciR
+--- PASS: TestFibonacciR (2.16s)
+=== RUN   TestFibonacciM
+--- PASS: TestFibonacciM (0.00s)
+=== RUN   ExampleFibonacciR
+--- PASS: ExampleFibonacciR (0.00s)
+=== RUN   ExampleFibonacciM
+--- PASS: ExampleFibonacciM (0.00s)
+goos: linux
+goarch: amd64
+pkg: github.com/sanya-spb/goLev1HW/fibonacci
+cpu: Intel(R) Core(TM) i5-3570K CPU @ 3.40GHz
+BenchmarkFibonacciR
+BenchmarkFibonacciR-4                177           6699196 ns/op
+BenchmarkFibonacciM
+BenchmarkFibonacciM-4             302389              3449 ns/op
+PASS
+ok      github.com/sanya-spb/goLev1HW/fibonacci 5.114s
 ```
 
-### TODO
+### 2.
+testify - серьезный подход к тестированию, в чем-то проще чем на чистом Go, но это смотря как относиться к тестированию.
 
-1. как сделать взаимозаменяемую структуру в Go
-
-```yaml
-#<...>
-# Database connection config
-database:
-    host: "127.0.0.1"
-    port: 54321
-    user: "test"
-    pass: "pwd123"
-    ssl: true
-#<...>
-```
-либо
-```yaml
-#<...>
-# Database connection config
-database:
-    url: jdbc:postgresql://localhost/test?user=fred&password=secret&ssl=true
-#<...>
-```
-
-понятно, что можно в структуру добавить еще один string и далее что-нить придумать..
-
-а как сделать, чтоб в зависимости от конфига - была либо та либо другая структура (знаний пока не хватает..)
+Если использовать упрощенный подход, то чистого Go более чем достаточно. Ну а при серьезном подходе к тестированию, думаю в перспективе testify выигрывает: меньше сил тратится на написание более тщательных тестов.

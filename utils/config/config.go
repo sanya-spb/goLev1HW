@@ -1,4 +1,4 @@
-package utils
+package config
 
 import (
 	"encoding/json"
@@ -23,23 +23,28 @@ const (
 )
 
 //TODO: db_url (https://github.com/xo/dburl)
-type Config struct {
-	Debug    bool   `toml:"debug" yaml:"debug" json:"debug"`
-	MyUrl    string `toml:"my_url" yaml:"my_url" json:"my_url"`
-	Database struct {
-		Host string `toml:"host" yaml:"host" json:"host"`
-		Port int    `toml:"port" yaml:"port" json:"port"`
-		User string `toml:"user" yaml:"user" json:"user"`
-		Pass string `toml:"pass" yaml:"pass" json:"pass"`
-		Ssl  bool   `toml:"ssl" yaml:"ssl" json:"ssl"`
-	} `toml:"database" yaml:"database" json:"database"`
-	Server struct {
-		Bind     []string `toml:"bind" yaml:"bind" json:"bind"`
-		Port     int      `toml:"port" yaml:"port" json:"port"`
-		LogLevel int      `toml:"log_level" yaml:"log_level" json:"log_level"`
-	} `toml:"server" yaml:"server" json:"server"`
+type confDatabase struct {
+	Host string `toml:"host" yaml:"host" json:"host"`
+	Port int    `toml:"port" yaml:"port" json:"port"`
+	User string `toml:"user" yaml:"user" json:"user"`
+	Pass string `toml:"pass" yaml:"pass" json:"pass"`
+	Ssl  bool   `toml:"ssl" yaml:"ssl" json:"ssl"`
 }
 
+type confServer struct {
+	Bind     []string `toml:"bind" yaml:"bind" json:"bind"`
+	Port     int      `toml:"port" yaml:"port" json:"port"`
+	LogLevel int      `toml:"log_level" yaml:"log_level" json:"log_level"`
+}
+
+type Config struct {
+	Debug    bool         `toml:"debug" yaml:"debug" json:"debug"`
+	MyUrl    string       `toml:"my_url" yaml:"my_url" json:"my_url"`
+	Database confDatabase `toml:"database" yaml:"database" json:"database"`
+	Server   confServer   `toml:"server" yaml:"server" json:"server"`
+}
+
+// Load config from file
 func LoadConfig(cfgFile string, debug bool) *Config {
 	var result *Config = new(Config)
 
@@ -95,12 +100,12 @@ func LoadConfig(cfgFile string, debug bool) *Config {
 	return result
 }
 
-// Check if host is valid IPv4 address (хотя на регулярках быстрее..)
+// Check if host is valid IPv4 address
 func IsIPv4Net(host string) bool {
 	return net.ParseIP(host) != nil
 }
 
-// Check if URL is valid (так себе проверка, но велосипед изобретать не хочу, лучше уж потом на коннекте ошибки ловить..)
+// Check if URL is valid
 func IsURL(str string) bool {
 	if _, err := url.ParseRequestURI(str); err != nil {
 		return false
@@ -108,7 +113,7 @@ func IsURL(str string) bool {
 	return true
 }
 
-// test for errors and fix
+// Test for errors and fix
 func testConfig(conf *Config) error {
 	// check My_url
 	if conf.MyUrl != "" && !IsURL(conf.MyUrl) {
@@ -136,6 +141,7 @@ func testConfig(conf *Config) error {
 	return nil
 }
 
+// Get string value from ENV
 func GetEnv(key string, defaultVal string) string {
 	if envVal, ok := os.LookupEnv(key); ok {
 		return envVal
@@ -143,6 +149,7 @@ func GetEnv(key string, defaultVal string) string {
 	return defaultVal
 }
 
+// Get bool value from ENV
 func GetEnvBool(key string, defaultVal bool) bool {
 	if envVal, ok := os.LookupEnv(key); ok {
 		envBool, err := strconv.ParseBool(envVal)
@@ -154,6 +161,7 @@ func GetEnvBool(key string, defaultVal bool) bool {
 }
 
 // UNUSED:
+// Get int value from ENV
 // func getEnvInt(key string, defaultVal int) int {
 // 	if envVal, ok := os.LookupEnv(key); ok {
 // 		envInt, err := strconv.ParseInt(envVal, 10, 64)
